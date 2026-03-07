@@ -1,0 +1,25 @@
+data:
+  img_dir: "data/images"
+  mask_dir: "data/masks"
+  size: [1024, 1024]
+  split_ratio: 0.1
+
+train:
+  steps: 1000
+  val_freq: 50
+  save_freq: 100
+  batch: 2
+  lr: 0.0001
+
+lora:
+  rank: 8
+  alpha: 16.0
+
+birefnet:
+  weight: "weight/BiRefNet-general-epoch_244.pth"
+  lateral_channels_in_collection: [1536, 768, 384, 192]
+  mul_scl_ipt: "cat"
+  dec_ipt: True
+  dec_ipt_split: True
+  ms_supervision: True
+  out_ref: True

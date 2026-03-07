@@ -1,0 +1,7 @@
+torch
+numpy
+albumentations
+Pillow
+PyYAML
+tqdm
+tensorboard
