@@ -8,7 +8,7 @@ class BasicDecBlk(nn.Module):
     def __init__(
         self,
         in_channels: int = 64,
-        out_channels: int = 64,
+        out_channels: int = 64
     ) -> None:
         super().__init__()
         inter_channels = 64
@@ -18,7 +18,7 @@ class BasicDecBlk(nn.Module):
             out_channels = inter_channels,
             kernel_size = 3,
             stride = 1,
-            padding = 1,
+            padding = 1
         )
         self.relu_in = nn.ReLU(inplace=True)
         self.dec_att = ASPPDeformable(in_channels=inter_channels)
@@ -28,14 +28,14 @@ class BasicDecBlk(nn.Module):
             out_channels = out_channels,
             kernel_size = 3,
             stride = 1,
-            padding = 1,
+            padding = 1
         )
         self.bn_in = nn.BatchNorm2d(inter_channels)
         self.bn_out = nn.BatchNorm2d(out_channels)
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         x = self.conv_in(x)
         x = self.bn_in(x)

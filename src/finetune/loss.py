@@ -7,7 +7,7 @@ class IoULoss(nn.Module):
     def forward(
         self,
         pred: torch.Tensor,
-        target: torch.Tensor,
+        target: torch.Tensor
     ) -> torch.Tensor:
         dims = (1, 2, 3)
         inter = torch.sum(target * pred, dim=dims)
@@ -20,7 +20,7 @@ class SegmentationLoss(nn.Module):
     def __init__(
         self,
         lambda_bce: float = 30.0,
-        lambda_iou: float = 0.5,
+        lambda_iou: float = 0.5
     ) -> None:
         super().__init__()
         self.bce = nn.BCEWithLogitsLoss()
@@ -31,14 +31,14 @@ class SegmentationLoss(nn.Module):
     def forward(
         self,
         pred: torch.Tensor,
-        target: torch.Tensor,
+        target: torch.Tensor
     ) -> torch.Tensor:
         if pred.shape[2:] != target.shape[2:]:
             pred = F.interpolate(
                 input = pred,
                 size = target.shape[2:],
                 mode = "bilinear",
-                align_corners = True,
+                align_corners = True
             )
 
         target = torch.clamp(target, 0, 1)

@@ -4,7 +4,7 @@ from typing import Any
 
 
 def load_yaml(
-    path: str,
+    path: str
 ) -> dict[str, Any]:
     with open(path, "r") as f:
         return yaml.safe_load(f)
@@ -12,11 +12,11 @@ def load_yaml(
 
 def save_yaml(
     data: dict[str, Any],
-    path: str,
+    path: str
 ) -> None:
     with open(path, "w") as f:
         yaml.safe_dump(
             data = data,
             stream = f,
-            sort_keys = False,
+            sort_keys = False
         )

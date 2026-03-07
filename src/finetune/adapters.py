@@ -8,7 +8,7 @@ class LoRALinear(nn.Module):
         self,
         linear: nn.Linear,
         rank: int = 8,
-        alpha: float = 16.0,
+        alpha: float = 16.0
     ) -> None:
         super().__init__()
         self.linear = linear
@@ -23,12 +23,12 @@ class LoRALinear(nn.Module):
         self.down = nn.Linear(
             in_features = in_features,
             out_features = rank,
-            bias = False,
+            bias = False
         )
         self.up = nn.Linear(
             in_features = rank,
             out_features = out_features,
-            bias = False,
+            bias = False
         )
 
         nn.init.kaiming_uniform_(self.down.weight, a=math.sqrt(5))
@@ -36,7 +36,7 @@ class LoRALinear(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         return self.linear(x) + self.up(self.down(x)) * self.scale
 
@@ -46,7 +46,7 @@ class LoRAConv2d(nn.Module):
         self,
         conv: nn.Conv2d,
         rank: int = 8,
-        alpha: float = 16.0,
+        alpha: float = 16.0
     ) -> None:
         super().__init__()
         self.conv = conv
@@ -66,13 +66,13 @@ class LoRAConv2d(nn.Module):
             padding = conv.padding,
             dilation = conv.dilation,
             groups = conv.groups,
-            bias = False,
+            bias = False
         )
         self.up = nn.Conv2d(
             in_channels = rank,
             out_channels = out_channels,
             kernel_size = 1,
-            bias = False,
+            bias = False
         )
 
         nn.init.kaiming_uniform_(self.down.weight, a=math.sqrt(5))
@@ -80,7 +80,7 @@ class LoRAConv2d(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         return self.conv(x) + self.up(self.down(x)) * self.scale
 
@@ -88,7 +88,7 @@ class LoRAConv2d(nn.Module):
 def apply_linear(
     model: nn.Module,
     rank: int = 8,
-    alpha: float = 16.0,
+    alpha: float = 16.0
 ) -> None:
     for _, m in model.named_modules():
         if isinstance(m, (LoRALinear, LoRAConv2d)):
@@ -101,15 +101,15 @@ def apply_linear(
                     LoRALinear(
                         linear = child_module,
                         rank = rank,
-                        alpha = alpha,
-                    ),
+                        alpha = alpha
+                    )
                 )
 
 
 def apply_conv2d(
     model: nn.Module,
     rank: int = 8,
-    alpha: float = 16.0,
+    alpha: float = 16.0
 ) -> None:
     for _, m in model.named_modules():
         if isinstance(m, (LoRALinear, LoRAConv2d)):
@@ -124,6 +124,6 @@ def apply_conv2d(
                     LoRAConv2d(
                         conv = child_module,
                         rank = rank,
-                        alpha = alpha,
-                    ),
+                        alpha = alpha
+                    )
                 )

@@ -13,7 +13,7 @@ class Mlp(nn.Module):
         hidden_features: int | None = None,
         out_features: int | None = None,
         act_layer: type[nn.Module] = nn.GELU,
-        drop: float = 0.0,
+        drop: float = 0.0
     ) -> None:
         super().__init__()
         out_features = out_features or in_features
@@ -25,7 +25,7 @@ class Mlp(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         x = self.fc1(x)
         x = self.act(x)
@@ -36,7 +36,7 @@ class Mlp(nn.Module):
 
 def window_partition(
     x: torch.Tensor,
-    window_size: int,
+    window_size: int
 ) -> torch.Tensor:
     b, h, w, c = x.shape
     x = x.view(b, h // window_size, window_size, w // window_size, window_size, c)
@@ -49,7 +49,7 @@ def window_reverse(
     windows: torch.Tensor,
     window_size: int,
     height: int,
-    width: int,
+    width: int
 ) -> torch.Tensor:
     c = int(windows.shape[-1])
     x = windows.view(
@@ -58,7 +58,7 @@ def window_reverse(
         width // window_size,
         window_size,
         window_size,
-        c,
+        c
     )
     return x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, height, width, c)
 
@@ -73,7 +73,7 @@ class WindowAttention(nn.Module):
         qk_scale: float | None = None,
         attn_drop: float = 0.0,
         proj_drop: float = 0.0,
-        sdpa_enabled: bool = True,
+        sdpa_enabled: bool = True
     ) -> None:
         super().__init__()
         self.sdpa_enabled = sdpa_enabled
@@ -117,7 +117,7 @@ class WindowAttention(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        mask: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None
     ) -> torch.Tensor:
         B_, N, C = x.shape
         assert N == self.window_size[0] * self.window_size[1], (
@@ -151,7 +151,7 @@ class WindowAttention(nn.Module):
                 v,
                 attn_mask = attn_mask,
                 dropout_p = self.attn_drop_prob if self.training else 0.0,
-                is_causal = False,
+                is_causal = False
             )
             x = attn_out.transpose(1, 2).reshape(B_, N, C)
         else:
@@ -185,7 +185,7 @@ class SwinTransformerBlock(nn.Module):
         drop_path: float = 0.0,
         act_layer: nn.Module = nn.GELU,
         norm_layer: nn.Module = nn.LayerNorm,
-        sdpa_enabled: bool = True,
+        sdpa_enabled: bool = True
     ) -> None:
         super().__init__()
         self.dim = dim
@@ -207,7 +207,7 @@ class SwinTransformerBlock(nn.Module):
             qk_scale = qk_scale,
             attn_drop = attn_drop,
             proj_drop = drop,
-            sdpa_enabled = sdpa_enabled,
+            sdpa_enabled = sdpa_enabled
         )
 
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
@@ -217,7 +217,7 @@ class SwinTransformerBlock(nn.Module):
             in_features = dim,
             hidden_features = mlp_hidden_dim,
             act_layer = act_layer,
-            drop = drop,
+            drop = drop
         )
 
         self.H = None
@@ -226,7 +226,7 @@ class SwinTransformerBlock(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        mask_matrix: torch.Tensor,
+        mask_matrix: torch.Tensor
     ) -> torch.Tensor:
         b, l, c = x.shape
         h, w = self.h, self.w
@@ -246,7 +246,7 @@ class SwinTransformerBlock(nn.Module):
             shifted_x = torch.roll(
                 x,
                 shifts = (-self.shift_size, -self.shift_size),
-                dims = (1, 2),
+                dims = (1, 2)
             )
             if self.sdpa_enabled:
                 B = x.size(0)
@@ -262,17 +262,17 @@ class SwinTransformerBlock(nn.Module):
 
         x_windows = window_partition(
             shifted_x,
-            self.window_size,
+            self.window_size
         )
         x_windows = x_windows.view(
             -1,
             self.window_size * self.window_size,
-            c,
+            c
         )
 
         attn_windows = self.attn(
             x_windows,
-            mask = attn_mask,
+            mask = attn_mask
         )
 
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, c)
@@ -282,7 +282,7 @@ class SwinTransformerBlock(nn.Module):
             x = torch.roll(
                 shifted_x,
                 shifts = (self.shift_size, self.shift_size),
-                dims = (1, 2),
+                dims = (1, 2)
             )
         else:
             x = shifted_x
@@ -300,7 +300,7 @@ class PatchMerging(nn.Module):
     def __init__(
         self,
         dim: int,
-        norm_layer: nn.Module = nn.LayerNorm,
+        norm_layer: nn.Module = nn.LayerNorm
     ) -> None:
         super().__init__()
         self.dim = dim
@@ -311,7 +311,7 @@ class PatchMerging(nn.Module):
         self,
         x: torch.Tensor,
         height: int,
-        width: int,
+        width: int
     ) -> torch.Tensor:
         b, l, c = x.shape
         assert l == height * width, "input feature has wrong size"
@@ -349,7 +349,7 @@ class BasicLayer(nn.Module):
         norm_layer: nn.Module = nn.LayerNorm,
         downsample: nn.Module | None = None,
         use_checkpoint: bool = False,
-        sdpa_enabled: bool = True,
+        sdpa_enabled: bool = True
     ) -> None:
         super().__init__()
         self.window_size = window_size
@@ -374,7 +374,7 @@ class BasicLayer(nn.Module):
                     if isinstance(drop_path, list)
                     else drop_path,
                     norm_layer = norm_layer,
-                    sdpa_enabled = sdpa_enabled,
+                    sdpa_enabled = sdpa_enabled
                 )
                 for i in range(depth)
             ]
@@ -389,7 +389,7 @@ class BasicLayer(nn.Module):
         self,
         x: torch.Tensor,
         height: int,
-        width: int,
+        width: int
     ) -> tuple:
         # Turn int to torch.tensor for the compatiability with torch.compile in PyTorch >= 2.5.
         hp = (
@@ -404,12 +404,12 @@ class BasicLayer(nn.Module):
         h_slices = (
             slice(0, -self.window_size),
             slice(-self.window_size, -self.shift_size),
-            slice(-self.shift_size, None),
+            slice(-self.shift_size, None)
         )
         w_slices = (
             slice(0, -self.window_size),
             slice(-self.window_size, -self.shift_size),
-            slice(-self.shift_size, None),
+            slice(-self.shift_size, None)
         )
         cnt = 0
         for h in h_slices:
@@ -419,7 +419,7 @@ class BasicLayer(nn.Module):
 
         mask_windows = window_partition(
             img_mask,
-            self.window_size,
+            self.window_size
         )
         mask_windows = mask_windows.view(-1, self.window_size * self.window_size)
         attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
@@ -450,7 +450,7 @@ class PatchEmbed(nn.Module):
         patch_size: int | tuple[int, int] = 4,
         in_channels: int = 3,
         embed_dim: int = 96,
-        norm_layer: type[nn.Module] | None = None,
+        norm_layer: type[nn.Module] | None = None
     ) -> None:
         super().__init__()
         patch_size = to_2tuple(patch_size)
@@ -463,13 +463,13 @@ class PatchEmbed(nn.Module):
             in_channels,
             embed_dim,
             kernel_size = patch_size,
-            stride = patch_size,
+            stride = patch_size
         )
         self.norm = norm_layer(embed_dim) if norm_layer is not None else None
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         _, _, h, w = x.size()
         if w % self.patch_size[1] != 0:
@@ -509,7 +509,7 @@ class SwinTransformer(nn.Module):
         out_indices: tuple[int, ...] = (0, 1, 2, 3),
         frozen_stages: int = -1,
         use_checkpoint: bool = False,
-        sdpa_enabled: bool = True,
+        sdpa_enabled: bool = True
     ) -> None:
         super().__init__()
 
@@ -526,7 +526,7 @@ class SwinTransformer(nn.Module):
             patch_size = patch_size,
             in_channels = in_channels,
             embed_dim = embed_dim,
-            norm_layer = norm_layer if self.patch_norm else None,
+            norm_layer = norm_layer if self.patch_norm else None
         )
 
         if self.ape:
@@ -534,7 +534,7 @@ class SwinTransformer(nn.Module):
             patch_size = to_2tuple(patch_size)
             patches_resolution = [
                 pretrain_img_size[0] // patch_size[0],
-                pretrain_img_size[1] // patch_size[1],
+                pretrain_img_size[1] // patch_size[1]
             ]
 
             self.absolute_pos_embed = nn.Parameter(
@@ -547,7 +547,7 @@ class SwinTransformer(nn.Module):
         dpr = np.linspace(
             0,
             drop_path_rate,
-            sum(depths),
+            sum(depths)
         ).tolist()
 
         self.layers = nn.ModuleList()
@@ -566,7 +566,7 @@ class SwinTransformer(nn.Module):
                 norm_layer = norm_layer,
                 downsample = PatchMerging if (i_layer < self.num_layers - 1) else None,
                 use_checkpoint = use_checkpoint,
-                sdpa_enabled = sdpa_enabled,
+                sdpa_enabled = sdpa_enabled
             )
             self.layers.append(layer)
 
@@ -599,7 +599,7 @@ class SwinTransformer(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> tuple[torch.Tensor, ...]:
         x = self.patch_embed(x)
 
@@ -608,7 +608,7 @@ class SwinTransformer(nn.Module):
             absolute_pos_embed = F.interpolate(
                 self.absolute_pos_embed,
                 size = (wh, ww),
-                mode = "bicubic",
+                mode = "bicubic"
             )
             x = x + absolute_pos_embed
 
@@ -634,7 +634,7 @@ class SwinTransformer(nn.Module):
 
     def train(
         self,
-        mode: bool = True,
+        mode: bool = True
     ) -> "SwinTransformer":
         super(SwinTransformer, self).train(mode)
         self._freeze_stages()
@@ -642,12 +642,12 @@ class SwinTransformer(nn.Module):
 
 
 def swin_v1_l(
-    sdpa_enabled: bool = True,
+    sdpa_enabled: bool = True
 ) -> SwinTransformer:
     return SwinTransformer(
         embed_dim = 192,
         depths = [2, 2, 18, 2],
         num_heads = [6, 12, 24, 48],
         window_size = 12,
-        sdpa_enabled = sdpa_enabled,
+        sdpa_enabled = sdpa_enabled
     )

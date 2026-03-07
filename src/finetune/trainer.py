@@ -15,7 +15,7 @@ class Trainer:
         valid_loader: DataLoader,
         criterion: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
-        device: torch.device,
+        device: torch.device
     ) -> None:
         self.model = model
         self.train_loader = train_loader
@@ -37,7 +37,7 @@ class Trainer:
         self,
         steps: int,
         val_freq: int = 500,
-        save_freq: int = 1000,
+        save_freq: int = 1000
     ) -> None:
         pbar = tqdm(range(1, steps + 1), desc="Training")
 
@@ -46,7 +46,7 @@ class Trainer:
             pbar.set_postfix(
                 loss = f"{losses['loss']:.4f}",
                 seg = f"{losses['seg']:.4f}",
-                aux = f"{losses['aux']:.4f}",
+                aux = f"{losses['aux']:.4f}"
             )
 
             if self.writer:
@@ -82,7 +82,7 @@ class Trainer:
         return {
             "loss": loss.item(),
             "seg": loss_seg.item(),
-            "aux": loss_aux.item(),
+            "aux": loss_aux.item()
         }
 
     @torch.no_grad()

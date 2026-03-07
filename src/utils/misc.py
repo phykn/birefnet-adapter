@@ -5,7 +5,7 @@ class ConfigDict(dict):
     def __init__(
         self,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Any
     ) -> None:
         super().__init__(*args, **kwargs)
         for key, value in self.items():
@@ -14,7 +14,7 @@ class ConfigDict(dict):
 
     def __getattr__(
         self,
-        name: str,
+        name: str
     ) -> Any:
         try:
             return self[name]
@@ -24,7 +24,7 @@ class ConfigDict(dict):
     def __setattr__(
         self,
         name: str,
-        value: Any,
+        value: Any
     ) -> None:
         if isinstance(value, dict):
             value = ConfigDict(value)

@@ -11,7 +11,7 @@ class LoRABiRefNet(nn.Module):
         self,
         model: nn.Module,
         rank: int = 8,
-        alpha: float = 16.0,
+        alpha: float = 16.0
     ) -> None:
         super().__init__()
         self.model = model
@@ -22,12 +22,12 @@ class LoRABiRefNet(nn.Module):
         apply_linear(
             model = self.model.bb,
             rank = rank,
-            alpha = alpha,
+            alpha = alpha
         )
         apply_conv2d(
             model = self.model.decoder,
             rank = rank,
-            alpha = alpha,
+            alpha = alpha
         )
 
         total = sum(p.numel() for p in self.parameters())
@@ -36,7 +36,7 @@ class LoRABiRefNet(nn.Module):
         self.stats = {
             "total": total,
             "trainable": trainable,
-            "frozen": total - trainable,
+            "frozen": total - trainable
         }
 
         self.aux_loss = torch.tensor(0.0)
@@ -44,7 +44,7 @@ class LoRABiRefNet(nn.Module):
 
     def _train_step(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         scaled_preds, _ = self.model(x)
         (gdt_preds, gdt_labels), preds = scaled_preds
@@ -55,7 +55,7 @@ class LoRABiRefNet(nn.Module):
                 input = pred,
                 size = label.shape[2:],
                 mode = "bilinear",
-                align_corners = True,
+                align_corners = True
             )
             label = label.sigmoid()
             loss = loss + self.bce(pred, label)
@@ -65,14 +65,14 @@ class LoRABiRefNet(nn.Module):
 
     def _eval_step(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         preds = self.model(x)
         return preds[-1]
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         if self.training:
             return self._train_step(x)
@@ -83,7 +83,7 @@ class LoRABiRefNet(nn.Module):
 
     def save_adapters(
         self,
-        path: str,
+        path: str
     ) -> None:
         state = {
             k: v for k, v in self.state_dict().items()
@@ -93,11 +93,11 @@ class LoRABiRefNet(nn.Module):
 
     def load_adapters(
         self,
-        path: str,
+        path: str
     ) -> None:
         state = torch.load(
             path,
             map_location = "cpu",
-            weights_only = True,
+            weights_only = True
         )
         self.load_state_dict(state, strict=False)

@@ -9,7 +9,7 @@ class BasicLatBlk(nn.Module):
         out_channels: int = 64,
         ks: int = 1,
         s: int = 1,
-        p: int = 0,
+        p: int = 0
     ) -> None:
         super().__init__()
         self.conv = nn.Conv2d(
@@ -17,11 +17,11 @@ class BasicLatBlk(nn.Module):
             out_channels = out_channels,
             kernel_size = ks,
             stride = s,
-            padding = p,
+            padding = p
         )
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         return self.conv(x)

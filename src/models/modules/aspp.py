@@ -11,7 +11,7 @@ class _ASPPModuleDeformable(nn.Module):
         in_channels: int,
         planes: int,
         kernel_size: int,
-        padding: int,
+        padding: int
     ) -> None:
         super().__init__()
         self.atrous_conv = DeformableConv2d(
@@ -20,14 +20,14 @@ class _ASPPModuleDeformable(nn.Module):
             kernel_size = kernel_size,
             stride = 1,
             padding = padding,
-            bias = False,
+            bias = False
         )
         self.bn = nn.BatchNorm2d(planes)
         self.relu = nn.ReLU(inplace=True)
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         x = self.atrous_conv(x)
         x = self.bn(x)        
@@ -39,7 +39,7 @@ class ASPPDeformable(nn.Module):
         self,
         in_channels: int,
         out_channels: int | None = None,
-        parallel_block_sizes: list[int] | tuple[int, ...] = (1, 3, 7),
+        parallel_block_sizes: list[int] | tuple[int, ...] = (1, 3, 7)
     ) -> None:
         super().__init__()
         self.down_scale = 1
@@ -53,7 +53,7 @@ class ASPPDeformable(nn.Module):
             in_channels = in_channels,
             planes = self.in_channelster,
             kernel_size = 1,
-            padding = 0,
+            padding = 0
         )
         
         self.aspp_deforms = nn.ModuleList(
@@ -62,7 +62,7 @@ class ASPPDeformable(nn.Module):
                     in_channels = in_channels,
                     planes = self.in_channelster,
                     kernel_size = conv_size,
-                    padding = int(conv_size // 2),
+                    padding = int(conv_size // 2)
                 )
                 for conv_size in parallel_block_sizes
             ]
@@ -75,17 +75,17 @@ class ASPPDeformable(nn.Module):
                 out_channels = self.in_channelster,
                 kernel_size = 1,
                 stride = 1,
-                bias = False,
+                bias = False
             ),
             nn.BatchNorm2d(self.in_channelster),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=True)
         )
         
         self.conv1 = nn.Conv2d(
             in_channels = self.in_channelster * (2 + len(self.aspp_deforms)),
             out_channels = out_channels,
             kernel_size = 1,
-            bias = False,
+            bias = False
         )
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
@@ -93,7 +93,7 @@ class ASPPDeformable(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         x1 = self.aspp1(x)
         x_aspp_deforms = [aspp_deform(x) for aspp_deform in self.aspp_deforms]
@@ -103,7 +103,7 @@ class ASPPDeformable(nn.Module):
             input = x5,
             size = x1.size()[2:],
             mode = "bilinear",
-            align_corners = True,
+            align_corners = True
         )
         
         x = torch.cat((x1, *x_aspp_deforms, x5), dim=1)

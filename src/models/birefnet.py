@@ -15,7 +15,7 @@ def image2patches(
     grid_h: int = 2,
     grid_w: int = 2,
     patch_ref: torch.Tensor | None = None,
-    transformation: str = "b c (hg h) (wg w) -> (b hg wg) c h w",
+    transformation: str = "b c (hg h) (wg w) -> (b hg wg) c h w"
 ) -> torch.Tensor:
     if patch_ref is not None:
         grid_h = image.shape[-2] // patch_ref.shape[-2]
@@ -25,7 +25,7 @@ def image2patches(
         tensor = image,
         pattern = transformation,
         hg = grid_h,
-        wg = grid_w,
+        wg = grid_w
     )
 
 
@@ -34,7 +34,7 @@ def patches2image(
     grid_h: int = 2,
     grid_w: int = 2,
     patch_ref: torch.Tensor | None = None,
-    transformation: str = "(b hg wg) c h w -> b c (hg h) (wg w)",
+    transformation: str = "(b hg wg) c h w -> b c (hg h) (wg w)"
 ) -> torch.Tensor:
     if patch_ref is not None:
         grid_h = patch_ref.shape[-2] // patches[0].shape[-2]
@@ -44,7 +44,7 @@ def patches2image(
         tensor = patches,
         pattern = transformation,
         hg = grid_h,
-        wg = grid_w,
+        wg = grid_w
     )
 
 
@@ -53,7 +53,7 @@ class SimpleConvs(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        inter_channels: int = 64,
+        inter_channels: int = 64
     ) -> None:
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels, inter_channels, 3, padding=1)
@@ -61,7 +61,7 @@ class SimpleConvs(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> torch.Tensor:
         return self.conv_out(self.conv1(x))
 
@@ -73,7 +73,7 @@ class Decoder(nn.Module):
         dec_ipt: bool = True,
         dec_ipt_split: bool = True,
         ms_supervision: bool = True,
-        out_ref: bool = True,
+        out_ref: bool = True
     ) -> None:
         super().__init__()
         self.dec_ipt = dec_ipt
@@ -124,17 +124,17 @@ class Decoder(nn.Module):
                 self.gdt_convs_4 = nn.Sequential(
                     nn.Conv2d(dec_blk_out_channels[0], _N, 3, padding=1),
                     nn.BatchNorm2d(_N),
-                    nn.ReLU(inplace=True),
+                    nn.ReLU(inplace=True)
                 )
                 self.gdt_convs_3 = nn.Sequential(
                     nn.Conv2d(dec_blk_out_channels[1], _N, 3, padding=1),
                     nn.BatchNorm2d(_N),
-                    nn.ReLU(inplace=True),
+                    nn.ReLU(inplace=True)
                 )
                 self.gdt_convs_2 = nn.Sequential(
                     nn.Conv2d(dec_blk_out_channels[2], _N, 3, padding=1),
                     nn.BatchNorm2d(_N),
-                    nn.ReLU(inplace=True),
+                    nn.ReLU(inplace=True)
                 )
 
                 self.gdt_convs_pred_4 = nn.Sequential(nn.Conv2d(_N, 1, 1))
@@ -147,7 +147,7 @@ class Decoder(nn.Module):
 
     def forward(
         self,
-        features: list[torch.Tensor] | tuple[torch.Tensor, ...],
+        features: list[torch.Tensor] | tuple[torch.Tensor, ...]
     ) -> list[torch.Tensor] | tuple[list[list[torch.Tensor]], list[torch.Tensor]]:
         if self.training and self.out_ref:
             outs_gdt_pred = []
@@ -254,7 +254,7 @@ class BiRefNet(nn.Module):
         dec_ipt: bool = True,
         dec_ipt_split: bool = True,
         ms_supervision: bool = True,
-        out_ref: bool = True,
+        out_ref: bool = True
     ) -> None:
         super().__init__()
         
@@ -276,12 +276,12 @@ class BiRefNet(nn.Module):
             dec_ipt = dec_ipt,
             dec_ipt_split = dec_ipt_split,
             ms_supervision = ms_supervision,
-            out_ref = out_ref,
+            out_ref = out_ref
         )
 
     def forward_enc(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> tuple[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor | None]:
         x1, x2, x3, x4 = self.bb(x)
         
@@ -310,7 +310,7 @@ class BiRefNet(nn.Module):
             interpolated_features = [
                 F.interpolate(x1, size=x4.shape[2:], mode="bilinear", align_corners=True),
                 F.interpolate(x2, size=x4.shape[2:], mode="bilinear", align_corners=True),
-                F.interpolate(x3, size=x4.shape[2:], mode="bilinear", align_corners=True),
+                F.interpolate(x3, size=x4.shape[2:], mode="bilinear", align_corners=True)
             ]
             
             x4 = torch.cat((*interpolated_features[-cxt_size:], x4), dim=1)
@@ -319,7 +319,7 @@ class BiRefNet(nn.Module):
 
     def forward_ori(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> tuple[list[torch.Tensor] | tuple[list[torch.Tensor], list[torch.Tensor]], torch.Tensor | None]:
         (x1, x2, x3, x4), class_preds = self.forward_enc(x)
         
@@ -336,7 +336,7 @@ class BiRefNet(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
+        x: torch.Tensor
     ) -> list[torch.Tensor] | tuple[list[torch.Tensor], list[torch.Tensor | None]] | torch.Tensor:
         scaled_preds, class_preds = self.forward_ori(x)
         

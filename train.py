@@ -9,7 +9,7 @@ from src.utils.misc import ConfigDict
 
 def save_data_csv(
     data: dict[str, list[str]],
-    wdir: str,
+    wdir: str
 ) -> None:
     for split in ["train", "valid"]:
         path = f"{wdir}/{split}.csv"
@@ -33,7 +33,7 @@ def train() -> None:
         cfg = cfg,
         model = model,
         train_dl = train_dl,
-        valid_dl = valid_dl,
+        valid_dl = valid_dl
     )
 
     save_yaml(data=cfg.to_dict(), path=f"{trainer.save_dir}/config.yaml")
@@ -42,7 +42,7 @@ def train() -> None:
     trainer.train(
         steps = cfg.train.steps,
         val_freq = cfg.train.val_freq,
-        save_freq = cfg.train.save_freq,
+        save_freq = cfg.train.save_freq
     )
 
     if hasattr(model, "save_adapters"):
